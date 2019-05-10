@@ -66,8 +66,9 @@
                   <dd class="address">{{item.streetName}}</dd>
                   <dd class="tel">{{item.tel}}</dd>
                 </dl>
+                <!-- 删除图标 -->
                 <div class="addr-opration addr-del">
-                  <a href="javascript:;" class="addr-del-btn">
+                  <a href="javascript:;" class="addr-del-btn" @click="delAddressConfirm(item.addressId)">
                     <svg class="icon icon-del"><use xlink:href="#icon-del"></use></svg>
                   </a>
                 </div>
@@ -122,11 +123,18 @@
           </div>
         </div>
         <div class="next-btn-wrap">
-          <a class="btn btn--m btn--red">Next</a>
+          <router-link class="btn btn--m btn--red" :to="{path: '/orderConfirm', query:{'addressId': defaultAddId}}">Next</router-link>
         </div>
       </div>
     </div>
   </div>
+  <Modal :mdShow="isMdshow" @close="closeModal">
+    <p slot="message">您是否确认要删除此地址</p>
+    <div slot="btnGroup">
+      <a href="javascript:;" class="btn btn--m" @click="delAddress">确认</a>
+      <a href="javascript:;" class="btn btn--m" @click="isMdshow=false">取消</a>
+    </div>
+  </Modal>
    <NavFooter/>
 </div>
 </template>
@@ -138,7 +146,13 @@ export default {
       // 默认显示 3 条数据
       limit: 3,
       // 选中地址的索引
-      checkIndex: 0
+      checkIndex: 0,
+      // 模态框是否显示
+      isMdshow: false,
+      // 保存地址的 id
+      addressId: '',
+      // 默认的地址id
+      defaultAddId: ''
     }
   },
   mounted () {
@@ -154,6 +168,11 @@ export default {
     getAddressList () {
       this.Axios.get('/users/addressList').then(res => {
         this.addressList = res.data.result
+        this.addressList.forEach(item => {
+          if (item.isDefault) {
+            this.defaultAddId = item.addressId
+          }
+        })
       }).catch(() => {
         console.log('服务器忙，请稍后重试')
       })
@@ -170,7 +189,25 @@ export default {
     setDefault (addressId) {
       this.Axios.post('/users/setDefaultAddress', {addressId})
         .then(() => {
+          this.defaultAddId = addressId
           this.getAddressList()
+        })
+    },
+    // 关闭模态框
+    closeModal () {
+      this.isMdshow = false
+    },
+    // 弹出删除模态框
+    delAddressConfirm (addressid) {
+      this.isMdshow = true
+      this.addressId = addressid
+    },
+    // 删除收获地址函数
+    delAddress () {
+      this.Axios.post('/users/delAddress', {addressId: this.addressId})
+        .then(() => {
+          this.getAddressList()
+          this.isMdshow = false
         })
     }
   }
