@@ -1,0 +1,80 @@
+router.post('/addCart', (req, res, next) => {
+  
+  let userId = '100000077'
+  // 获取商品 id
+  let productId = req.body.productId
+  // 获取用户模型
+  let User = require('./../models/user')
+  // 通过 userid 查询用户信息
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  User.findOne({userId}, (err, userDoc) => {
+    if (err) {
+      res.json({
+        status: '1',
+        msg: err.message
+      })
+    } else {
+      if (userDoc) {
+        let goodsItem = false
+        userDoc.cartList.forEach(item => {
+          // 购物车中商品已经存在, 数量++
+          if (item.productId === productId) {
+            goodsItem = true
+            item.productNum++
+          } 
+        })
+        // 商品存在, 保存
+        if (goodsItem) {
+          userDoc.save(err2 => {
+            if (err2) {
+              res.json({
+                status: '1',
+                msg: err2.message
+              })
+            } else {
+              res.json({
+                status: '0',
+                msg: '',
+                result: 'suc'
+              })
+            }
+          })
+        } 
+        // 商品添加购物车
+        else {
+          // 查询商品信息
+          Goods.findOne({productId}, (err1, doc) => {
+            if (err1) {
+              res.json({
+                status: '1',
+                msg: err1.message
+              })
+            } else {
+              if (doc) {
+                doc.productNum = 1
+                doc.checked = 1
+                // 将商品加入用户的购物车
+                userDoc.cartList.push(doc)
+                // 保存插入后的用户信息
+                userDoc.save((err2, doc2) => {
+                  if (err2) {
+                    res.json({
+                      status: '1',
+                      msg: err2.message
+                    })
+                  } else {
+                    res.json({
+                      status: '0',
+                      msg:'',
+                      result: 'suc'
+                    })
+                  }
+                })
+              }
+            }
+          })
+        }
+      }
+    }
+  })
+})
