@@ -231,5 +231,33 @@ router.post('/setDefaultAddress', (req, res) => {
         result: ''
       })
     })
-}),
+})
+
+// 删除地址接口
+router.post('/delAddress', (req, res) => {
+  let userId = req.cookies.userId
+  let addressId = req.body.addressId
+  // 删除 数据库子文档
+  User.update({userId}, {
+    $pull: {
+      'addressList': {addressId}
+    }
+  })
+    .then(data => {
+      if (data) {
+        res.json({
+          status: 0,
+          msg: 'ok',
+          result: ''
+        })
+      }
+    })
+    .catch(err => {
+      res.json({
+        status: '1',
+        msg: err.message,
+        result: ''
+      })
+    })
+})
 module.exports = router;
