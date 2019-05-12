@@ -1,2 +1,2 @@
 # imoocshop
-this is a shop project  made by Vue and  nodejs
+Vue + Nodejs(Express) + mongoodb 全栈商城
