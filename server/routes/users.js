@@ -260,4 +260,23 @@ router.post('/delAddress', (req, res) => {
       })
     })
 })
+
+// 获取用户需要支付的商品
+router.get('/payGoods', (req, res) => {
+  let userId = req.cookies.userId
+  let goodsList = []
+  User.findOne({userId}).then(data => {
+    let cartList = data.cartList
+    cartList.forEach(item => {
+      if (item.checked == '1') {
+        goodsList.push(item) 
+      }
+    })
+    res.json({
+      status: '0',
+      msg: 'ok',
+      result: goodsList
+    })
+  })
+})
 module.exports = router;
