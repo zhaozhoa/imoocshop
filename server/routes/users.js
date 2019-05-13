@@ -106,6 +106,27 @@ router.get('/cartList', (req, res) => {
   })
 })
 
+// 获取商品数量
+router.get('/goodsNum', (req, res) => {
+  let userId = req.cookies.userId
+  User.findOne({userId})
+    .then(result => {
+      let goodsNum = result.cartList.length
+      res.json({
+        status: '0',
+        err: '',
+        result: goodsNum
+      })
+    })
+    .catch(err => {
+      res.json({
+        status: '1',
+        msg: err.message,
+        result: ''
+      })
+    })
+})
+
 // 删除购物车商品
 router.get('/delGoods', (req, res) => {
   let productId = req.query.productId
