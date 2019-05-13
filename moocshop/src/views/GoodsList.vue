@@ -199,6 +199,7 @@ export default {
       }).then(res => {
         if (res.data.status === '0') {
           this.mdShowCart = true
+          this.$store.commit('updateCartCount', 1)
         } else if (res.data.status === '10001') {
           this.mdShow = true
         } else {

@@ -32,7 +32,7 @@
                 <a href="javascript:void(0)" class="navbar-link" @click="loginModalFlag=true" v-if="!nickName">Login</a>
                 <a href="javascript:void(0)" class="navbar-link" @click="logOut" v-else>Logout</a>
                 <div class="navbar-cart-container">
-                  <span class="navbar-cart-count" v-text="cartCount" v-if="cartCount"></span>
+                  <span class="navbar-cart-count" v-text="cartCount" v-if="cartCount">{{cartCount}}</span>
                   <a class="navbar-link navbar-cart-link" href="/#/cart">
                     <svg class="navbar-cart-logo">
                       <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-cart"></use>
@@ -162,12 +162,20 @@ export default {
       // 控制模态框的提示是否显示
       errorTip: false,
       // 登陆模特框是否显示
-      loginModalFlag: false,
-      nickName: ''
+      loginModalFlag: false
+      // nickName: ''
     }
   },
   mounted () {
     this.checkLogin()
+  },
+  computed: {
+    nickName () {
+      return this.$store.state.nickName
+    },
+    cartCount () {
+      return this.$store.state.cartCount
+    }
   },
   methods: {
     // 检查是否登陆
@@ -175,7 +183,10 @@ export default {
       Axios.get('/users/checkLogin').then(res => {
         let data = res.data
         if (data.status === '0') {
-          this.nickName = data.result
+          // this.nickName = data.result
+          // 提交muations
+          this.$store.commit('updateUserInfo', data.result)
+          this.getGoodsNum()
         }
       })
     },
@@ -193,7 +204,8 @@ export default {
         if (res.status === '0') {
           this.errorTip = false
           this.loginModalFlag = false
-          this.nickName = res.result.userName
+          this.$store.commit('updateUserInfo', res.result.userName)
+          // this.nickName = res.result.userName
         } else {
           this.errorTip = true
         }
@@ -203,9 +215,21 @@ export default {
       Axios.post('/users/logout').then(response => {
         let data = response.data
         if (data.status === '0') {
-          this.nickName = ''
+          // this.nickName = ''
+          this.$store.commit('updateUserInfo', '')
         }
       })
+    },
+    // 获取购物车商品数量
+    getGoodsNum () {
+      this.Axios.get('/users/goodsNum')
+        .then(res => {
+          let data = res.data
+          this.$store.commit('initCartCount', data.result)
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
   }
 }

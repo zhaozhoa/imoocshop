@@ -235,7 +235,7 @@ export default{
       this.productNumCont = false
     },
     // 删除商品
-    delCart () {
+    delCart () { 
       this.Axios.get('/users/delGoods', {
         params: {
           productId: this.productId
@@ -245,6 +245,7 @@ export default{
         if (data.status === '0') {
           this.modalConfirm = false
           this.getCartList()
+          this.$store.commit('updateCartCount', -1)
         }
       }).catch(err => {
         console.log(err.data.msg)
