@@ -170,7 +170,7 @@ export default {
       this.Axios.post('/users/payMent', {orderTotal: this.orderTotal, addressId})
         .then(res => {
           this.$router.push({
-            path: `/orderSuccess?orderId=${res.data.result.orderId}`
+            path: `/orderSuccess?orderId=${res.data.result.orderId}&orderTotal=${this.orderTotal}`
           })
         })
     }
