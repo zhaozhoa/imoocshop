@@ -69,7 +69,7 @@
                   </div>
                 </div>
                 <div class="cart-tab-2">
-                  <div class="item-price">{{item.salePrice}}</div>
+                  <div class="item-price">{{item.salePrice | currency()}}</div>
                 </div>
                 <div class="cart-tab-3">
                   <div class="item-quantity">
@@ -82,7 +82,7 @@
                   </div>
                 </div>
                 <div class="cart-tab-4">
-                  <div class="item-price-total">${{item.salePrice * item.productNum}}</div>
+                  <div class="item-price-total">{{(item.salePrice * item.productNum) | currency()}}</div>
                 </div>
               </li>
             </ul>
@@ -95,23 +95,23 @@
             <ul>
               <li>
                 <span>Item subtotal:</span>
-                <span>$2499</span>
+                <span>{{subTotal | currency()}}</span>
               </li>
               <li>
                 <span>Shipping:</span>
-                <span>$100</span>
+                <span>{{shipping | currency()}}</span>
               </li>
               <li>
                 <span>Discount:</span>
-                <span>$0</span>
+                <span>-{{discont | currency()}}</span>
               </li>
               <li>
                 <span>Tax:</span>
-                <span>$400</span>
+                <span>{{tax | currency()}}</span>
               </li>
               <li class="order-total-price">
                 <span>Order total:</span>
-                <span>$1999</span>
+                <span>{{orderTotal | currency()}}</span>
               </li>
             </ul>
           </div>
@@ -119,10 +119,10 @@
 
         <div class="order-foot-wrap">
           <div class="prev-btn-wrap">
-            <button class="btn btn--m">Previous</button>
+            <router-link to="/address" class="btn btn--m">Previous</router-link>
           </div>
           <div class="next-btn-wrap">
-            <button class="btn btn--m btn--red">Proceed to payment</button>
+            <button class="btn btn--m btn--red" @click="payMent">Proceed to payment</button>
           </div>
         </div>
       </div>
@@ -135,7 +135,17 @@ export default {
   data () {
     return {
       // 商品列表数据
-      goodsList: []
+      goodsList: [],
+      // 配送费
+      shipping: 100,
+      // 折扣
+      discont: 200,
+      // 税
+      tax: 400,
+      // 总价
+      orderTotal: 0,
+      // 商品zongjia
+      subTotal: 0
     }
   },
   mounted () {
@@ -147,9 +157,22 @@ export default {
         let data = res.data
         if (data.status === '0') {
           this.goodsList = data.result
-          console.log(this.goodsList)
+          this.goodsList.forEach(item => {
+            this.subTotal += item.salePrice * item.productNum
+            this.orderTotal = this.subTotal + this.shipping - this.discont + this.tax
+          })
         }
       })
+    },
+    // 生成订单
+    payMent () {
+      let addressId = this.$route.query.addressId
+      this.Axios.post('/users/payMent', {orderTotal: this.orderTotal, addressId})
+        .then(res => {
+          this.$router.push({
+            path: `/orderSuccess?orderId=${res.data.result.orderId}`
+          })
+        })
     }
   }
 }
