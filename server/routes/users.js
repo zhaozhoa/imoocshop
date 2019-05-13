@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+require('./../util/util')
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -278,5 +279,74 @@ router.get('/payGoods', (req, res) => {
       result: goodsList
     })
   })
+})
+
+// 生成用户购买的订单信息
+router.post('/payMent', (req, res) => {
+  let userId = req.cookies.userId
+  let goodsList = []
+  let {orderTotal, addressId} = req.body
+  User.findOne({userId})
+    .then(data => {
+      // 获取送货地址
+      let address = ''
+      data.addressList.forEach(item => {
+        if (addressId = item.addressId) {
+          address = item
+        }
+      })
+      // 获取用户购买的商品
+      data.cartList.filter(item => {
+        if (item.checked == '1') {
+          goodsList.push(item)
+        }
+      })
+      // 生成随机的订单id
+      let platList = '622'
+      let r1 = Math.floor(Math.random() * 10)
+      let r2 = Math.floor(Math.random() * 10)
+      let sysDate = new Date().Format('yyyyMMddhhmmss')
+      // 订单日期
+      let createDate = new Date().Format('yyyy-MM-dd hh:mm:ss')
+
+      let orderId = platList + r1 + sysDate +r2
+
+
+      // 订单信息
+      let order = {
+        orderId,
+        orderTotal,
+        addressInfo: address,
+        goodsList,
+        orderStatus: '1',
+        createDate
+      }
+      data.orderList.push(order)
+      data.save()
+        .then(() => {
+          res.json({
+            status: '0',
+            msg: 'ok',
+            result: {
+              orderId: order.orderId,
+              orderTotal: order.orderTotal
+            }
+          })
+        })
+        .catch(err2 => {
+          res.json({
+            status: '1',
+            msg: err2.msg,
+            result: ''
+          })
+        })
+    })
+    .catch(err => {
+      res.json({
+        status: '1',
+        msg: err.msg,
+        result: ''
+      })
+    })
 })
 module.exports = router;
