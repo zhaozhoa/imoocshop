@@ -76,7 +76,7 @@ router.get('/list', (req, res, next) => {
 
 // 添加购物车
 // 先查找商品信息, 然后将商品信息插入到购物车
-router.post('/addCart', (req, res, next) => {
+router.post('/addCart', async (req, res, next) => {
 
   let userId = '100000077'
   // 获取商品 id
@@ -85,7 +85,10 @@ router.post('/addCart', (req, res, next) => {
   let User = require('./../models/user')
   // 通过 userid 查询用户信息
   res.setHeader("Access-Control-Allow-Origin", "*")
-  User.findOne({ userId }).then(userDoc => {
+
+
+  try {
+    let userDoc = await User.findOne({ userId })
     if (userDoc) {
       let goodsItem = false
       userDoc.cartList.forEach(item => {
@@ -97,56 +100,58 @@ router.post('/addCart', (req, res, next) => {
       })
       // 商品存在, 保存
       if (goodsItem) {
-        userDoc.save().then(() => {
+        try {
+          await userDoc.save()
           res.json({
             status: '0',
             msg: '',
             result: 'suc'
           })
-        }).catch(err2 => {
+        } catch (err2) {
           res.json({
             status: '1',
             msg: err2.message
           })
-        })
+        }
       }
       // 商品添加购物车
       else {
         // 查询商品信息
-        Goods.findOne({ productId }).then(doc => {
+        try {
+          let doc = await Goods.findOne({ productId })
           if (doc) {
             doc.productNum = 1
             doc.checked = 1
             // 将商品加入用户的购物车
             userDoc.cartList.push(doc)
             // 保存插入后的用户信息
-            userDoc.save().then(doc2 => {
+            try {
+              await userDoc.save()
               res.json({
                 status: '0',
                 msg: '',
                 result: 'suc'
               })
-            }).catch(err2 => {
+            } catch (error) {
               res.json({
                 status: '1',
                 msg: err2.message
               })
-            })
+            }
           }
-        }).catch(err1 => {
+        } catch (err1) {
           res.json({
             status: '1',
             msg: err1.message
           })
-        })
+        }
       }
     }
-  }).catch(err => {
+  } catch (err) {
     res.json({
       status: '1',
       msg: err.message
     })
-
-  })
+  }
 })
 module.exports = router
